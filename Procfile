@@ -1,0 +1,1 @@
+web: gunicorn church_portal_backend.wsgi
