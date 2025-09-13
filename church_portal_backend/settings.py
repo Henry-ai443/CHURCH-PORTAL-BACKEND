@@ -77,17 +77,24 @@ WSGI_APPLICATION = 'church_portal_backend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'church_portal_db',
-        'USER':'church_user',
-        'PASSWORD':'Hm@0724356198',
-        'HOST':'localhost',
-        'PORT':'3306',
+import dj_database_url
+from decouple import config
+if config("ENV", default="development") == "production":
+    DATABASES = {
+        "default":
+        dj_database_url.config(default=config("DATABASE_URL"))
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'church_portal_db',
+            'USER':'church_user',
+            'PASSWORD':'Hm@0724356198',
+            'HOST':'localhost',
+            'PORT':'3306',
+    }
+    }
 
 
 # Password validation
@@ -125,6 +132,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
