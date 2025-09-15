@@ -7,6 +7,7 @@ class AnnouncementSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'message', 'time','created_at']
 
 class EventSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(use_url=True)
     class Meta:
         model = Event
-        fields = ['id', 'title', 'description', 'date_time', 'location','image','zoom_link']
+        fields = ['id', 'title', 'description', 'date_time', 'location','image','zoom_link', 'entry']

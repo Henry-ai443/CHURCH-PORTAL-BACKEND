@@ -13,6 +13,7 @@ class Announcement(models.Model):
 class Event(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
+    entry = models.TextField(blank=True, null=True)
     date_time = models.DateTimeField()
     location = models.CharField(max_length=200, blank=True, null=True)
     image = models.ImageField(upload_to='event_images/', blank=True, null=True)
