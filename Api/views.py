@@ -6,15 +6,19 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 
 class AnnouncementListApiView(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         announcements = Announcement.objects.all().order_by('-created_at')[:3] # latest 3
         serializer = AnnouncementSerializer(announcements, many=True)
         return Response(serializer.data)
 
 class AllAnnouncementsView(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         announcements = Announcement.objects.order_by('-created_at')
         serializer = AnnouncementSerializer(announcements, many=True)
@@ -22,6 +26,7 @@ class AllAnnouncementsView(APIView):
 
 #LIST ALL EVENTS
 class EventListView(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         events = Event.objects.all().order_by('-date_time') #latest first
         serializer = EventSerializer(events, many=True)
@@ -29,6 +34,7 @@ class EventListView(APIView):
 
 #SINGLE EVENT DETAIL
 class EventDetailView(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request, pk):
         try:
             event = Event.objects.get(pk=pk)
@@ -40,6 +46,7 @@ class EventDetailView(APIView):
 
 
 class RegisterView(APIView):
+    permission_classes=[AllowAny]
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
@@ -56,7 +63,9 @@ class RegisterView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class LoginView(APIView):
+    permission_classes=[AllowAny]   
     def post(self, request):
         username = request.data.get("username")
         password = request.data.get("password")
@@ -67,10 +76,20 @@ class LoginView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "User does not exist."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Authenticate user now
         user = authenticate(request, username=username, password=password)
         if user is None:
             return Response(
-                {"detail": "Invalid username or password."},
+                {"detail": "Incorrect password."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
