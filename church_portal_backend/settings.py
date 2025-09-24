@@ -87,6 +87,12 @@ if config("ENV", default="development") == "production":
         "default":
         dj_database_url.config(default=config("DATABASE_URL"))
     }
+
+    DATABASES['default']['OPTIONS'] = {
+        'ssl':{
+            'ca': BASE_DIR / 'certs'/ 'ca.pem',
+        },
+    }
 else:
     DATABASES = {
         'default': {

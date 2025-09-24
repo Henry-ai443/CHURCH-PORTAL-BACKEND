@@ -13,7 +13,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 class AnnouncementListApiView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
-        announcements = Announcement.objects.all().order_by('-created_at')[:3] # latest 3
+        announcements = Announcement.objects.all().order_by('-created_at')[:3] 
         serializer = AnnouncementSerializer(announcements, many=True)
         return Response(serializer.data)
 
