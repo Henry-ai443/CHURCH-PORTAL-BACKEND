@@ -8,7 +8,7 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from django.http import JsonResponse
+from django.http import JsonResponse        
 
 def root_view(request):
     return JsonResponse({"message": "Welcome to the Church Portal API"})

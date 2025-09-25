@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+from cloudinary.models import CloudinaryField
 # Create your models here.
 class Announcement(models.Model):
     title = models.CharField(max_length=200)
@@ -16,7 +17,7 @@ class Event(models.Model):
     entry = models.TextField(blank=True, null=True)
     date_time = models.DateTimeField()
     location = models.CharField(max_length=200, blank=True, null=True)
-    image = models.ImageField(upload_to='event_images/', blank=True, null=True)
+    image = CloudinaryField('image', blank=True, null=True)
     zoom_link = models.URLField(blank=True, null=True)
 
     def __str__(self):
