@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Announcement, Event
+from .models import Announcement, Event, Profile
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 
@@ -42,3 +42,13 @@ class RegisterSerializer(serializers.ModelSerializer):
             password=validated_data['password']
         )
         return user
+
+class ProfileSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+    email = serializers.EmailField(source='user.email', read_only=True)
+    image = serializers.ImageField(source='profile_picture', use_url=True, required=False)
+
+    class Meta:
+        model = Profile
+        fields = ['id', 'username', 'email', 'bio', 'image', 'created', 'updated']
+        read_only_fields = ['created', 'updated']
