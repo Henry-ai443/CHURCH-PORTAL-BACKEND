@@ -42,11 +42,10 @@ class RegisterSerializer(serializers.ModelSerializer):
             password=validated_data['password']
         )
         return user
-
 class ProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
     email = serializers.EmailField(source='user.email', read_only=True)
-    image = serializers.ImageField(source='profile_picture', use_url=True, required=False)
+    image = serializers.URLField(source='profile_picture', required=False)
 
     class Meta:
         model = Profile
