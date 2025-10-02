@@ -131,15 +131,22 @@ class UserProfileAPIView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    
     def patch(self, request):
         try:
             profile, created = Profile.objects.get_or_create(user=request.user)
         except Profile.DoesNotExist:
             return Response({'detail': 'Profile not found.'}, status=status.HTTP_404_NOT_FOUND)
 
+        print("PATCH request data:", request.data)  # What data was sent?
+
         serializer = ProfileSerializer(profile, data=request.data, partial=True)
         if serializer.is_valid():
+            print("Serializer validated data:", serializer.validated_data)
             serializer.save()
+            print("Updated profile:", serializer.data)
             return Response(serializer.data)
+        else:
+            print("Serializer errors:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
