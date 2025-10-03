@@ -14,5 +14,5 @@ urlpatterns = [
     path('register/', views.RegisterView.as_view(), name="register"),
     path('login/', views.LoginView.as_view(), name="login"),
     path('profile/me/', views.UserProfileAPIView.as_view(), name="profile"),
-    path('profile/change_password', views.ChangePasswordAPIView.as_view(), name="change_password"),
+    path('profile/change_password/', views.ChangePasswordAPIView.as_view(), name="change_password"),
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
