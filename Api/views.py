@@ -150,3 +150,20 @@ class UserProfileAPIView(APIView):
             print("Serializer errors:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class ChangePasswordAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        current_password = request.data.get("current_password")
+        new_password = request.data.get("new_password")
+
+        if not user.check_password(current_password):
+            return Response({"detail": "Current password is incorrect."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not new_password:
+            return Response({"detail": "New password cannot be empty."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(new_password)
+        user.save()
+        return Response({"detail": "Password updated successfully."}, status=status.HTTP_200_OK)
