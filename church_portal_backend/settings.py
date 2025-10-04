@@ -46,7 +46,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # Must be first
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -120,6 +120,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "https://church-portal-frontend.vercel.app",
 ]
+
+CORS_ALLOW_CREDENTIALS = True
+
+# Uncomment for temporary testing to allow all origins (remove after testing)
+# CORS_ALLOW_ALL_ORIGINS = True
 
 # REST Framework
 REST_FRAMEWORK = {
