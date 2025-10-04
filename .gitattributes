@@ -1,0 +1,10 @@
+# Exclude common generated/vendor folders from language stats
+/build/* linguist-vendored
+/dist/* linguist-vendored
+/node_modules/* linguist-vendored
+
+# Ignore minified JS files
+*.min.js linguist-generated
+
+# Optional: ignore all JS files if not part of actual code
+# *.js linguist-vendored
