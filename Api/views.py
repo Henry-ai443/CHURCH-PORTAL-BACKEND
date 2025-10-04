@@ -53,6 +53,10 @@ class EventDetailView(APIView):
             return Response({'error':"Event not Found"}, status=status.HTTP_404_NOT_FOUND)
         
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 class YouthMessageCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -79,10 +83,10 @@ class YouthMessageCreateView(APIView):
                 email.send(fail_silently=False)
                 return Response({'detail': 'Message submitted and email sent successfully.'}, status=status.HTTP_201_CREATED)
             except Exception as e:
-                return Response({'detail': f'Error sending email: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                logger.error(f"Error sending email: {e}")
+                return Response({'detail': 'Message submitted but failed to send email.'}, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class YouthAnsweredMessagesView(APIView):
     permission_classes = [IsAuthenticated]
