@@ -1,14 +1,20 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
-from .models import Announcement, Event, Profile
-from .serializers import AnnouncementSerializer, RegisterSerializer, EventSerializer, ProfileSerializer
+from .models import Announcement, Event, Profile, YouthMessage
+from .serializers import AnnouncementSerializer, RegisterSerializer, EventSerializer, ProfileSerializer, YouthMessageSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from django.http import JsonResponse        
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
+from django.http import JsonResponse   
+from django.core.mail import send_mail  
+from django.conf import settings
+from django.utils.timezone import now   
+from django.core.mail import EmailMessage
+
+
 
 def root_view(request):
     return JsonResponse({"message": "Welcome to the Church Portal API"})
@@ -47,6 +53,71 @@ class EventDetailView(APIView):
             return Response({'error':"Event not Found"}, status=status.HTTP_404_NOT_FOUND)
         
 
+class YouthMessageCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = YouthMessageSerializer(data=request.data)
+        if serializer.is_valid():
+            message = serializer.save(user=request.user)
+            subject = f"Youth Message from {'Anonymous' if message.is_anonymous else request.user.username}"
+            body = (
+                f"Title: {message.title}\n\n"
+                f"Message: {message.message}\n\n"
+                f"Date: {message.submitted_at.strftime('%Y-%m-%d %H:%M:%S')}\n"
+                f"From: {'Anonymous' if message.is_anonymous else request.user.email}"
+            )
+
+            try:
+                email = EmailMessage(
+                    subject=subject,
+                    body=body,
+                    from_email=settings.EMAIL_HOST_USER,
+                    to=['henrymaina2024@outlook.com'],
+                    bcc=[request.user.email] if not message.is_anonymous else [],
+                )
+                email.send(fail_silently=False)
+                return Response({'detail': 'Message submitted and email sent successfully.'}, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                return Response({'detail': f'Error sending email: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class YouthAnsweredMessagesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        messages = YouthMessage.objects.filter(is_answered=True).order_by('-answered_at')
+        serializer = YouthMessageSerializer(messages, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class YouthUnansweredMessagesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        messages = YouthMessage.objects.filter(is_answered=False).order_by('-submitted_at')
+        serializer = YouthMessageSerializer(messages, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class YouthMessageAnswerView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request, pk):
+        try:
+            message = YouthMessage.objects.get(pk=pk)
+        except YouthMessage.DoesNotExist:
+            return Response({'detail': 'Message not found.'}, status=status.HTTP_404_NOT_FOUND)
+        answer = request.data.get('answer')
+        if not answer:
+            return Response({'detail': 'Answer is empty.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        message.answer = answer
+        message.is_answered = True
+        message.answered_at = now()
+        message.save()
+
+        return Response({'detail': 'Message answered successfully.'}, status=status.HTTP_200_OK)
 
 class RegisterView(APIView):
     permission_classes=[AllowAny]

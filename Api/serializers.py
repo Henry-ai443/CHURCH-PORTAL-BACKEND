@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Announcement, Event, Profile
+from .models import Announcement, Event, Profile, YouthMessage
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 
@@ -60,3 +60,13 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ['id', 'username', 'email', 'bio', 'image', 'unique_id', 'created', 'updated']
         read_only_fields = ['created', 'updated', 'unique_id']  # Make unique_id read-only
+
+class YouthMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = YouthMessage
+        fields = [
+            'id', 'user', 'title', 'message', 'submitted_at', 
+            'is_anonymous', 'is_answered', 'answer', 'answered_at'
+        ]
+        read_only_fields = ['submitted_at', 'is_answered', 'answer', 'answered_at']
+        

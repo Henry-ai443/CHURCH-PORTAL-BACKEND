@@ -15,4 +15,10 @@ urlpatterns = [
     path('login/', views.LoginView.as_view(), name="login"),
     path('profile/me/', views.UserProfileAPIView.as_view(), name="profile"),
     path('profile/change_password/', views.ChangePasswordAPIView.as_view(), name="change_password"),
+
+    # Youth Message Endpoints
+    path('youth/messages/create/', views.YouthMessageCreateView.as_view(), name="create_youth_message"),
+    path('youth/messages/answered/', views.YouthAnsweredMessagesView.as_view(), name="answered_youth_messages"),
+    path('youth/messages/unanswered/', views.YouthUnansweredMessagesView.as_view(), name="unanswered_youth_messages"),
+    path('youth/messages/<int:pk>/answer/', views.YouthMessageAnswerView.as_view(), name="answer_youth_message"),
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
