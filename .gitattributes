@@ -1,0 +1,8 @@
+# Exclude large CSS and JS files from language stats
+*.css linguist-vendored
+*.js linguist-vendored
+
+# Exclude specific directories
+/staticfiles/* linguist-vendored
+/media/* linguist-vendored
+/certs/* linguist-vendored
