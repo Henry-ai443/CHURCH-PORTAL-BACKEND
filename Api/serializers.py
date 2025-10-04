@@ -68,5 +68,6 @@ class YouthMessageSerializer(serializers.ModelSerializer):
             'id', 'user', 'title', 'message', 'submitted_at', 
             'is_anonymous', 'is_answered', 'answer', 'answered_at'
         ]
-        read_only_fields = ['submitted_at', 'is_answered', 'answer', 'answered_at']
-        
+        read_only_fields = [
+            'user', 'submitted_at', 'is_answered', 'answer', 'answered_at'
+        ]
