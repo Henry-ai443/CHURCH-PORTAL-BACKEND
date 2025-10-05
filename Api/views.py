@@ -13,7 +13,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.timezone import now   
 from django.core.mail import EmailMessage
-from resend import Resend
+import resend
 import logging
 
 
@@ -56,7 +56,9 @@ class EventDetailView(APIView):
         
 
 logger = logging.getLogger(__name__)
-resend = Resend(settings.RESEND_API_KEY)
+
+
+logger = logging.getLogger(__name__)  # Make sure logging is set up
 
 class YouthMessageCreateView(APIView):
     permission_classes = [IsAuthenticated]
@@ -65,28 +67,45 @@ class YouthMessageCreateView(APIView):
         serializer = YouthMessageSerializer(data=request.data)
         if serializer.is_valid():
             message = serializer.save(user=request.user)
+
             subject = f"Youth Message from {'Anonymous' if message.is_anonymous else request.user.username}"
-            body = (
+            body_text = (
                 f"Title: {message.title}\n\n"
                 f"Message: {message.message}\n\n"
                 f"Date: {message.submitted_at.strftime('%Y-%m-%d %H:%M:%S')}\n"
                 f"From: {'Anonymous' if message.is_anonymous else request.user.email}"
             )
-            
+
+            body_html = f"""
+                <h3>{message.title}</h3>
+                <p>{message.message}</p>
+                <p><strong>Date:</strong> {message.submitted_at.strftime('%Y-%m-%d %H:%M:%S')}</p>
+                <p><strong>From:</strong> {'Anonymous' if message.is_anonymous else request.user.email}</p>
+            """
+
             try:
-                resend.messages.send(
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    to=['henrymaina2024@outlook.com'],
-                    bcc=[request.user.email] if not message.is_anonymous else [],
-                    subject=subject,
-                    text=body,
-                )
+                # Set Resend API key
+                resend.api_key = settings.RESEND_API_KEY
+
+                # Send email using Resend
+                resend.Emails.send({
+                    "from": settings.DEFAULT_FROM_EMAIL,
+                    "to": ["henrymaina2024@outlook.com"],
+                    "bcc": [request.user.email] if not message.is_anonymous else [],
+                    "subject": subject,
+                    "text": body_text,
+                    "html": body_html,
+                })
+
                 return Response({'detail': 'Message submitted and email sent successfully.'}, status=status.HTTP_201_CREATED)
+
             except Exception as e:
                 logger.error(f"Error sending email with Resend API: {e}")
                 return Response({'detail': 'Message submitted but failed to send email.'}, status=status.HTTP_201_CREATED)
+
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 
