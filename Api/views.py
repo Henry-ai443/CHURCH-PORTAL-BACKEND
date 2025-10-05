@@ -13,6 +13,8 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.timezone import now   
 from django.core.mail import EmailMessage
+from resend import Resend
+import logging
 
 
 
@@ -53,9 +55,8 @@ class EventDetailView(APIView):
             return Response({'error':"Event not Found"}, status=status.HTTP_404_NOT_FOUND)
         
 
-import logging
-
 logger = logging.getLogger(__name__)
+resend = Resend(settings.RESEND_API_KEY)
 
 class YouthMessageCreateView(APIView):
     permission_classes = [IsAuthenticated]
@@ -71,22 +72,23 @@ class YouthMessageCreateView(APIView):
                 f"Date: {message.submitted_at.strftime('%Y-%m-%d %H:%M:%S')}\n"
                 f"From: {'Anonymous' if message.is_anonymous else request.user.email}"
             )
-
+            
             try:
-                email = EmailMessage(
-                    subject=subject,
-                    body=body,
-                    from_email=settings.EMAIL_HOST_USER,
+                resend.messages.send(
+                    from_email=settings.DEFAULT_FROM_EMAIL,
                     to=['henrymaina2024@outlook.com'],
                     bcc=[request.user.email] if not message.is_anonymous else [],
+                    subject=subject,
+                    text=body,
                 )
-                email.send(fail_silently=False)
                 return Response({'detail': 'Message submitted and email sent successfully.'}, status=status.HTTP_201_CREATED)
             except Exception as e:
-                logger.error(f"Error sending email: {e}")
+                logger.error(f"Error sending email with Resend API: {e}")
                 return Response({'detail': 'Message submitted but failed to send email.'}, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 class YouthAnsweredMessagesView(APIView):
     permission_classes = [IsAuthenticated]
