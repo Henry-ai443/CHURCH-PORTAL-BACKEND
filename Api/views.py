@@ -13,6 +13,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.timezone import now   
 from django.core.mail import EmailMessage
+from rest_framework.pagination import PageNumberPagination
 import resend
 import logging
 
@@ -107,24 +108,35 @@ class YouthMessageCreateView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
+class SixPerPagePagination(PageNumberPagination):
+    page_size = 6
+    page_size_query_param = 'page_size'  # Optional: allows clients to override page size
+    max_page_size = 50
 
 class YouthAnsweredMessagesView(APIView):
     permission_classes = [IsAuthenticated]
+    pagination_class = SixPerPagePagination
 
     def get(self, request):
         messages = YouthMessage.objects.filter(is_answered=True).order_by('-answered_at')
-        serializer = YouthMessageSerializer(messages, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(messages, request, view=self)
+        serializer = YouthMessageSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
 class YouthUnansweredMessagesView(APIView):
     permission_classes = [IsAuthenticated]
+    pagination_class = SixPerPagePagination
 
     def get(self, request):
         messages = YouthMessage.objects.filter(is_answered=False).order_by('-submitted_at')
-        serializer = YouthMessageSerializer(messages, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(messages, request, view=self)
+        serializer = YouthMessageSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+
+
 class YouthMessageAnswerView(APIView):
     permission_classes = [IsAdminUser]
 
