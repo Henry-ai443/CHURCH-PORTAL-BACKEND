@@ -21,4 +21,8 @@ urlpatterns = [
     path('youth/messages/answered/', views.YouthAnsweredMessagesView.as_view(), name="answered_youth_messages"),
     path('youth/messages/unanswered/', views.YouthUnansweredMessagesView.as_view(), name="unanswered_youth_messages"),
     path('youth/messages/<int:pk>/answer/', views.YouthMessageAnswerView.as_view(), name="answer_youth_message"),
+
+
+    #CHATS
+    path('chat/messages/', views.ChatMessageAPIVIEW.as_view(), name="chat_messages")
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

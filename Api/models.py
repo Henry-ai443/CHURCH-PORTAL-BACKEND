@@ -53,3 +53,13 @@ class YouthMessage(models.Model):
 
     def __str__(self):
         return self.title or f"Message #{self.id}"
+    
+
+
+class ChatMessage(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    message = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user}: {self.message[:20]}"

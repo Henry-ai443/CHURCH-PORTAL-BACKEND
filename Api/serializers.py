@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Announcement, Event, Profile, YouthMessage
+from .models import Announcement, Event, Profile, YouthMessage, ChatMessage
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 
@@ -71,3 +71,13 @@ class YouthMessageSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'user', 'submitted_at', 'is_answered', 'answer', 'answered_at'
         ]
+
+class ChatMessageSerializer(serializers.ModelSerializer):
+    username = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ChatMessage
+        fields = ['id', 'message', 'timestamp', 'username']
+
+    def get_username(self, obj):
+        return obj.user.username if obj.user else "Anonymous"
