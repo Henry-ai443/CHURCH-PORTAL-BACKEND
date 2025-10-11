@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'rest_framework',
     'rest_framework.authtoken',
+    'channels',
 
     # Your app
     'Api.apps.ApiConfig',
@@ -164,3 +165,26 @@ cloudinary.config(
 # Keep the default from email for sending
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
 RESEND_API_KEY = config("RESEND_API_KEY")
+
+
+#ASGI SETTINGS
+ASGI_APPLICATION = 'church_portal_backend.asgi.application'
+
+
+#REDDIS
+import os
+import urllib.parse
+
+redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379')
+parsed_url = urllib.parse.urlparse(redis_url)
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [(parsed_url.hostname, parsed_url.port)],
+            'password': parsed_url.password,
+            'ssl': parsed_url.scheme == 'rediss',
+        },
+    },
+}
