@@ -1,17 +1,22 @@
 import json
+import logging
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from .models import ChatMessage
 from django.contrib.auth.models import User
 
+logger = logging.getLogger(__name__)
+
 class ChatConsumer(AsyncWebsocketConsumer):
-    online_users = set()  # Class-level set to track online users, alternatively use a shared cache
+    # NOTE: Class-level set is per-process only. For multi-process/global tracking,
+    # use a shared store like Redis or cache.
+    online_users = set()
 
     async def connect(self):
         self.room_group_name = 'chat_room'
         self.user = self.scope.get("user")
 
-        # Join room group
+        # Join the chat group
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
@@ -19,10 +24,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         await self.accept()
 
-        # Add user to online users list
+        # Add user to online users and notify others
         if self.user and self.user.is_authenticated:
             self.online_users.add(self.user.username)
-            # Notify others of the online status change
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
@@ -33,16 +37,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
 
     async def disconnect(self, close_code):
-        # Leave room group
+        # Leave the chat group
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
         )
 
-        # Remove user from online users list
+        # Remove user from online users and notify others
         if self.user and self.user.is_authenticated and self.user.username in self.online_users:
             self.online_users.remove(self.user.username)
-            # Notify others user went offline
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
@@ -74,7 +77,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
 
         elif message_type == 'typing':
-            # Broadcast typing status to others
             username = self.user.username if (self.user and self.user.is_authenticated) else "Anonymous"
             is_typing = data.get('is_typing', False)
             await self.channel_layer.group_send(
@@ -87,12 +89,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
 
         elif message_type == 'read':
-            # Handle read receipts (e.g., mark message as read in DB)
             message_id = data.get('message_id')
             if message_id:
                 await self.mark_message_read(message_id, self.user)
 
-                # Notify others that this message was read
                 await self.channel_layer.group_send(
                     self.room_group_name,
                     {
@@ -132,15 +132,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def save_message(self, user, message):
-        return ChatMessage.objects.create(user=user, message=message)
+        try:
+            return ChatMessage.objects.create(user=user, message=message)
+        except Exception as e:
+            logger.error(f"Failed to save message: {e}")
 
     @database_sync_to_async
     def mark_message_read(self, message_id, user):
-        # Assuming your ChatMessage model has a 'read_by' ManyToMany field or similar
         try:
             msg = ChatMessage.objects.get(id=message_id)
             if user and user.is_authenticated:
                 msg.read_by.add(user)
                 msg.save()
         except ChatMessage.DoesNotExist:
-            pass
+            logger.warning(f"Message with id {message_id} does not exist.")
+        except Exception as e:
+            logger.error(f"Error marking message read: {e}")

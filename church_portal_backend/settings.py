@@ -7,6 +7,7 @@ import dj_database_url
 from decouple import config
 import os
 import cloudinary
+import urllib.parse
 
 # Build paths inside the project
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,8 +23,9 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Security settings
 SECRET_KEY = config("SECRET_KEY")
-DEBUG = True
-ALLOWED_HOSTS = ['*']
+DEBUG = False  # Make sure DEBUG is False in production
+
+ALLOWED_HOSTS = ['https://church-portal-backend.onrender.com']
 
 # Application definition
 INSTALLED_APPS = [
@@ -75,30 +77,22 @@ TEMPLATES = [
     },
 ]
 
+# Use ASGI application for Channels
+ASGI_APPLICATION = 'church_portal_backend.asgi.application'
+
+# Use WSGI for normal HTTP requests (optional, but recommended)
 WSGI_APPLICATION = 'church_portal_backend.wsgi.application'
 
-# Database configuration
-if config("ENV", default="development") == "production":
-    DATABASES = {
-        "default": dj_database_url.config(default=config("DATABASE_URL"))
-    }
+# Database configuration for production
+DATABASES = {
+    "default": dj_database_url.config(default=config("DATABASE_URL"))
+}
 
-    DATABASES['default']['OPTIONS'] = {
-        'ssl': {
-            'ca': BASE_DIR / 'certs' / 'ca.pem',
-        },
-    }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'church_portal_db',
-            'USER': 'church_user',
-            'PASSWORD': 'Hm@0724356198',
-            'HOST': 'localhost',
-            'PORT': '3306',
-        }
-    }
+DATABASES['default']['OPTIONS'] = {
+    'ssl': {
+        'ca': BASE_DIR / 'certs' / 'ca.pem',
+    },
+}
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -117,15 +111,12 @@ USE_TZ = True
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS
+# CORS configuration
 CORS_ALLOWED_ORIGINS = [
-    "https://church-portal-frontend.vercel.app",
+    "https://church-portal-frontend.vercel.app",  # Frontend URL(s)
 ]
 
 CORS_ALLOW_CREDENTIALS = True
-
-# Uncomment for temporary testing to allow all origins (remove after testing)
-# CORS_ALLOW_ALL_ORIGINS = True
 
 # REST Framework
 REST_FRAMEWORK = {
@@ -152,7 +143,6 @@ CLOUDINARY_STORAGE = {
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-# Cloudinary initialization (important!)
 cloudinary.config(
     cloud_name=config("CLOUD_NAME"),
     api_key=config("API_KEY"),
@@ -160,21 +150,7 @@ cloudinary.config(
     secure=True
 )
 
-# Email settings using Resend API (No SMTP config)
-
-# Keep the default from email for sending
-DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
-RESEND_API_KEY = config("RESEND_API_KEY")
-
-
-#ASGI SETTINGS
-ASGI_APPLICATION = 'church_portal_backend.asgi.application'
-
-
-#REDDIS
-import os
-import urllib.parse
-
+# Redis / Channels configuration
 redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379')
 parsed_url = urllib.parse.urlparse(redis_url)
 
@@ -188,3 +164,11 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+# Security headers (optional but recommended for production)
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+X_FRAME_OPTIONS = 'DENY'
+
