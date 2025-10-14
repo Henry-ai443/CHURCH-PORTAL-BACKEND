@@ -25,7 +25,7 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 SECRET_KEY = config("SECRET_KEY")
 DEBUG = False  # Make sure DEBUG is False in production
 
-ALLOWED_HOSTS = ['https://church-portal-backend.onrender.com']
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
