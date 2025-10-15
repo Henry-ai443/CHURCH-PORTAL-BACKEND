@@ -7,7 +7,6 @@ import dj_database_url
 from decouple import config
 import os
 import cloudinary
-import urllib.parse
 
 # Build paths inside the project
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -113,8 +112,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS configuration
 CORS_ALLOWED_ORIGINS = [
- # Frontend URL(s)
- "https://generalconferenceyouthportal.vercel.app/"
+    # Frontend URL(s)
+    "https://generalconferenceyouthportal.vercel.app"
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -153,15 +152,12 @@ cloudinary.config(
 
 # Redis / Channels configuration
 redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379')
-parsed_url = urllib.parse.urlparse(redis_url)
 
 CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            'hosts': [(parsed_url.hostname, parsed_url.port)],
-            'password': parsed_url.password,
-            'ssl': parsed_url.scheme == 'rediss',
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [redis_url],
         },
     },
 }
