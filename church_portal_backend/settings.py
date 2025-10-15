@@ -113,7 +113,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS configuration
 CORS_ALLOWED_ORIGINS = [
-    "https://church-portal-frontend.vercel.app",  # Frontend URL(s)
+ # Frontend URL(s)
+ "https://generalconferenceyouthportal.vercel.app/"
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -172,3 +173,6 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 X_FRAME_OPTIONS = 'DENY'
 
+# --- Additions for HTTPS behind proxy (fix mixed content URLs) ---
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
