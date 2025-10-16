@@ -36,6 +36,16 @@ class AllAnnouncementsView(APIView):
         serializer = AnnouncementSerializer(announcements, many=True)
         return Response(serializer.data)
 
+    def post(sself, request):
+        serializer = AnnouncementSerializer(data = request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Resposne({
+                message:"Announcement added successfully"
+            }, status=status.HTTP_201_CREATED)
+        else:
+            return Resposne(serializer.errors)
+
 #LIST ALL EVENTS
 class EventListView(APIView):
     permission_classes = [IsAuthenticated]
@@ -43,6 +53,19 @@ class EventListView(APIView):
         events = Event.objects.all().order_by('-date_time') #latest first
         serializer = EventSerializer(events, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = EventSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                message:"Event added successfully"
+            })
+        return Response({
+            "error":serializer.errors
+        })
+
+    
 
 #SINGLE EVENT DETAIL
 class EventDetailView(APIView):
@@ -54,7 +77,26 @@ class EventDetailView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Event.DoesNotExist:
             return Response({'error':"Event not Found"}, status=status.HTTP_404_NOT_FOUND)
-        
+
+    def put(self, request, pk):
+        try:
+            event = Event.objects.get(pk = pk)
+            serializer = EventSerializer(data= request.data, instance=event)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({
+                    "message":"The event was updated successfully"
+                }, status=status.HTTP_200_OK)
+            return Response({
+                "error":"An error occured updating the event"
+            }, stattus=status.HTTP_400_BAD_REQUEST)
+        except Event.DoesNotExist:
+            return Response({
+                "error":"Event Does Not exist"
+            }, status=status.HTTP_404_NOT_FOUND)
+        return Response({
+            "error":serializer.errors
+        })
 
 logger = logging.getLogger(__name__)
 
