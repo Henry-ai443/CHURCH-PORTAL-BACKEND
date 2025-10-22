@@ -7,12 +7,18 @@ from django.conf.urls.static import static
 API ENPOINTS
 """
 urlpatterns = [
+    #GENERAL INFO ENDPOINTS
     path('announcements/latest/', views.AnnouncementListApiView.as_view(), name="announcements"),
     path('announcements/all/', views.AllAnnouncementsView.as_view(), name="all_announcements"),
     path('events/', views.EventListView.as_view(), name="event-list"),
     path('events/<int:pk>/', views.EventDetailView.as_view(), name='event-detail'),
+
+    #AUTHENTICATION ENDPOINTS
     path('register/', views.RegisterView.as_view(), name="register"),
     path('login/', views.LoginView.as_view(), name="login"),
+    path('current_user/', views.CurrentUserAPIView.as_view(), name="currentUser"),
+
+    #USER ENDPOITNS
     path('profile/me/', views.UserProfileAPIView.as_view(), name="profile"),
     path('profile/change_password/', views.ChangePasswordAPIView.as_view(), name="change_password"),
 
@@ -23,6 +29,6 @@ urlpatterns = [
     path('youth/messages/<int:pk>/answer/', views.YouthMessageAnswerView.as_view(), name="answer_youth_message"),
 
 
-    #CHATS
+    # ROOM CHATS ENPOINT
     path('chat/messages/', views.ChatMessageAPIVIEW.as_view(), name="chat_messages")
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

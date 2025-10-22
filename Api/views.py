@@ -7,7 +7,7 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser, BasePermission
 from django.http import JsonResponse   
 from django.core.mail import send_mail  
 from django.conf import settings
@@ -16,6 +16,31 @@ from django.core.mail import EmailMessage
 from rest_framework.pagination import PageNumberPagination
 import resend
 import logging
+from django.shortcuts import get_object_or_404
+
+
+class CurrentUserAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response({
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "is_staff": user.is_staff,
+            "is_superuser": user.is_superuser,
+            # You can also include groups if needed later
+        })
+
+
+class IsStaffUser(BasePermission):
+
+    """
+    Allows access only to staff users.
+    """
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.is_authenticated and request.user.is_staff)
 
 
 
@@ -46,11 +71,17 @@ class AllAnnouncementsView(APIView):
         else:
             return Resposne(serializer.errors)
 
-#LIST ALL EVENTS
+
+
 class EventListView(APIView):
-    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [IsAuthenticated(), IsStaffUser()]
+        return [IsAuthenticated()]
+
     def get(self, request):
-        events = Event.objects.all().order_by('-date_time') #latest first
+        events = Event.objects.all().order_by('-date_time')
         serializer = EventSerializer(events, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -58,45 +89,42 @@ class EventListView(APIView):
         serializer = EventSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({
-                message:"Event added successfully"
-            })
-        return Response({
-            "error":serializer.errors
-        })
-
-    
+            return Response({"message": "Event added successfully"}, status=status.HTTP_201_CREATED)
+        return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 #SINGLE EVENT DETAIL
+
 class EventDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
+            return [IsAuthenticated(), IsStaffUser()]  # Only staff can modify
+        return [IsAuthenticated()]  # Any authenticated user can view
+
     def get(self, request, pk):
-        try:
-            event = Event.objects.get(pk=pk)
-            serializer = EventSerializer(event)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except Event.DoesNotExist:
-            return Response({'error':"Event not Found"}, status=status.HTTP_404_NOT_FOUND)
+        event = get_object_or_404(Event, pk=pk)
+        serializer = EventSerializer(event)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk):
-        try:
-            event = Event.objects.get(pk = pk)
-            serializer = EventSerializer(data= request.data, instance=event)
-            if serializer.is_valid():
-                serializer.save()
-                return Response({
-                    "message":"The event was updated successfully"
-                }, status=status.HTTP_200_OK)
-            return Response({
-                "error":"An error occured updating the event"
-            }, stattus=status.HTTP_400_BAD_REQUEST)
-        except Event.DoesNotExist:
-            return Response({
-                "error":"Event Does Not exist"
-            }, status=status.HTTP_404_NOT_FOUND)
-        return Response({
-            "error":serializer.errors
-        })
+        event = get_object_or_404(Event, pk=pk)
+        serializer = EventSerializer(instance=event, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "The event was updated successfully"}, status=status.HTTP_200_OK)
+        return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, pk):
+        event = get_object_or_404(Event, pk=pk)
+        serializer = EventSerializer(instance=event, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "The event was partially updated successfully"}, status=status.HTTP_200_OK)
+        return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        event = get_object_or_404(Event, pk=pk)
+        event.delete()
+        return Response({"message": "The event was deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 
 logger = logging.getLogger(__name__)
 
