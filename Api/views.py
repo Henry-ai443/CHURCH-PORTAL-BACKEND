@@ -279,6 +279,7 @@ class LoginView(APIView):
         return Response(
             {
                 "username": user.username,
+                "is_staff":user.is_staff,
                 "token": token.key,
                 "message": "Login successful",
             },
