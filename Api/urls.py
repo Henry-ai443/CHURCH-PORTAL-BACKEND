@@ -30,5 +30,9 @@ urlpatterns = [
 
 
     # ROOM CHATS ENPOINT
-    path('chat/messages/', views.ChatMessageAPIVIEW.as_view(), name="chat_messages")
+    path('chat/messages/', views.ChatMessageAPIVIEW.as_view(), name="chat_messages"),
+
+
+    #ADMIN ENDPOINTS
+    path('registered_users/', views.RegisteredMembers.as_view(), name="registered_users")
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

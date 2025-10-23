@@ -2,6 +2,9 @@ from rest_framework import serializers
 from .models import Announcement, Event, Profile, YouthMessage, ChatMessage
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
+from rest_framework import serializers
+from django.contrib.auth.models import User
+from .models import Profile
 
 class AnnouncementSerializer(serializers.ModelSerializer):
     class Meta:
@@ -13,11 +16,6 @@ class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = ['id', 'title', 'description', 'date_time', 'location','image','zoom_link', 'entry']
-
-
-from rest_framework import serializers
-from django.contrib.auth.models import User
-from .models import Profile
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -81,3 +79,8 @@ class ChatMessageSerializer(serializers.ModelSerializer):
 
     def get_username(self, obj):
         return obj.user.username if obj.user else "Anonymous"
+
+class MembersSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', "username", "email", "date_joined", "is_staff", "is_active"]

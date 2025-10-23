@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from .models import Announcement, Event, Profile, YouthMessage, ChatMessage
-from .serializers import AnnouncementSerializer, RegisterSerializer, EventSerializer, ProfileSerializer, YouthMessageSerializer, ChatMessageSerializer
+from .serializers import AnnouncementSerializer, RegisterSerializer, EventSerializer, ProfileSerializer, YouthMessageSerializer, ChatMessageSerializer, MembersSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
@@ -348,9 +348,20 @@ class ChangePasswordAPIView(APIView):
         return Response({"detail": "Password updated successfully."}, status=status.HTTP_200_OK)
 
 class ChatMessageAPIVIEW(APIView):
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         messages = ChatMessage.objects.order_by('-timestamp')[:50]
         serializer = ChatMessageSerializer(messages, many=True)
         return Response(serializer.data)
+
+
+class RegisteredMembers(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        users = User.objects.all().order_by('-date_joined')
+        serializer = MembersSerializer(users, many=True)
+        return Response(serializer.data)
+        
