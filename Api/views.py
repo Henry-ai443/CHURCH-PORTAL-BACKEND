@@ -358,7 +358,7 @@ class ChatMessageAPIVIEW(APIView):
 
 
 class RegisteredMembers(APIView):
-    permission_classes = [IsAdminUser, IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         users = User.objects.all().order_by('-date_joined')
