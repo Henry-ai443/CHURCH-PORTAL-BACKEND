@@ -17,6 +17,8 @@ from rest_framework.pagination import PageNumberPagination
 import resend
 import logging
 from django.shortcuts import get_object_or_404
+from django.core.paginator import Paginator
+from django.db.models import Q
 
 
 class CurrentUserAPIView(APIView):
@@ -357,10 +359,36 @@ class ChatMessageAPIVIEW(APIView):
         return Response(serializer.data)
 
 
+
+
+
 class RegisteredMembers(APIView):
     permission_classes = [IsAuthenticated, IsAdminUser]
 
     def get(self, request):
+        # Get query parameters
+        page = int(request.query_params.get('page', 1))
+        limit = int(request.query_params.get('limit', 20))
+        search_query = request.query_params.get('search', '')
+
+        # Filter queryset
         users = User.objects.all().order_by('-date_joined')
-        serializer = MembersSerializer(users, many=True)
-        return Response(serializer.data)
+        if search_query:
+            users = users.filter(
+                Q(username__icontains=search_query) |
+                Q(email__icontains=search_query)
+            )
+
+        # Paginate queryset
+        paginator = Paginator(users, limit)
+        current_page = paginator.get_page(page)
+        serializer = MembersSerializer(current_page, many=True)
+
+        # Return paginated response
+        return Response({
+            "users": serializer.data,
+            "page": page,
+            "total_pages": paginator.num_pages,
+            "total_users": paginator.count,
+            "has_next": current_page.has_next()
+        })
