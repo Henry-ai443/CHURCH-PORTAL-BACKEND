@@ -392,3 +392,53 @@ class RegisteredMembers(APIView):
             "total_users": paginator.count,
             "has_next": current_page.has_next()
         })
+
+
+"""ADMIN VIEWS"""
+
+
+class AdminAnnouncementView(APIView):
+    permission_classes=[IsAdminUser, IsAuthenticated]
+    def get(self, request):
+        announcements = Announcement.objects.all()
+        serializer = AnnouncementSerializer(announcements, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = AnnouncementSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message":"Announcement created successfully"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class AdminAnnouncementDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        announcement = get_object_or_404(Announcement, pk=pk)
+        serializer = AnnouncementSerializer(announcement)
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        announcement = get_object_or_404(Announcement, pk=pk)
+        serializer = AnnouncementSerializer(instance=announcement, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message":"Announcenement updated successfully"}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, pk):
+        announcement = get_object_or_404(Announcement, pk=pk)
+        serializer = AnnouncementSerializer(instance=announcement, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message":"Announcenement updated successfully"}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+    def delete(self, request, pk):
+        announcement = get_object_or_404(Announcement, pk=pk)
+        announcement.delete()
+        return Response({"message":"Announcement deleted successfully"}, status=status.HTTP_404_NOT_FOUND)

@@ -34,5 +34,13 @@ urlpatterns = [
 
 
     #ADMIN ENDPOINTS
-    path('registered_users/', views.RegisteredMembers.as_view(), name="registered_users")
+    path('registered_users/', views.RegisteredMembers.as_view(), name="registered_users"),
+
+    #announcements enpoints
+    path("admin/announcements/", views.AdminAnnouncementView.as_view(), name="adminAnnouncement"),
+    path("admin/announcements/<int:pk>/", views.AdminAnnouncementDetailView.as_view(), name="adminAnnouncement"),
+
+
+
+
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
