@@ -35,10 +35,10 @@ urlpatterns = [
 
     #ADMIN ENDPOINTS
     path('registered_users/', views.RegisteredMembers.as_view(), name="registered_users"),
-
-    #announcements enpoints
     path("admin/announcements/", views.AdminAnnouncementView.as_view(), name="adminAnnouncement"),
     path("admin/announcements/<int:pk>/", views.AdminAnnouncementDetailView.as_view(), name="adminAnnouncement"),
+    path("admin/events/<int:pk>/", views.AdminEventDetailView.as_view(), name="adminEvent"),
+    path("admin/events/", views.AdminEventView.as_view(), name="adminEvent"),
 
 
 
