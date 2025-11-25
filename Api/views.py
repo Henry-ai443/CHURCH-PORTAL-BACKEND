@@ -491,6 +491,7 @@ class AdminEventDetailView(APIView):
 #YOUTH QUIZESS SECTION
 
 class FetchQuizAPIView(APIView):
+    permission_classes = [AllowAny]
     def get(self, request):
 
         url = "https://opentdb.com/api.php?amount=200&category=10&type=multiple"
