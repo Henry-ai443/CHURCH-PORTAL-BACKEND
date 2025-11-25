@@ -494,7 +494,7 @@ class FetchQuizAPIView(APIView):
     permission_classes = [AllowAny]
     def get(self, request):
 
-        url = "https://opentdb.com/api.php?amount=200&category=10&type=multiple"
+        url = "https://opentdb.com/api.php?amount=1000&category=20&type=multiple"
 
         try:
             response = requests.get(url)
