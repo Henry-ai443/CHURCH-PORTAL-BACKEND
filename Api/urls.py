@@ -40,6 +40,9 @@ urlpatterns = [
     path("admin/events/<int:pk>/", views.AdminEventDetailView.as_view(), name="adminEvent"),
     path("admin/events/", views.AdminEventView.as_view(), name="adminEvent"),
 
+    #UTILITIES
+    path("quizes/fetch/", views.FetchQuizAPIView.as_view(), name="quiz-fetch"),
+    
 
 
 

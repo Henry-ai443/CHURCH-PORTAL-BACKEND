@@ -19,6 +19,7 @@ import logging
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
 from django.db.models import Q
+import requests
 
 
 class CurrentUserAPIView(APIView):
@@ -485,3 +486,23 @@ class AdminEventDetailView(APIView):
         event = get_object_or_404(Event, pk=pk)
         event.delete()
         return Response({"message": "The event was deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+
+
+#YOUTH QUIZESS SECTION
+
+class FetchQuizAPIView(APIView):
+    def get(self, request):
+
+        url = "https://opentdb.com/api.php?amount=200&category=10&type=multiple"
+
+        try:
+            response = requests.get(url)
+            data = response.json()
+
+            if data.get("response_code") != 0:
+                return Response({"error": "No questions available"}, status=status.HTTP_404_NOT_FOUND)
+
+            return Response(data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
