@@ -490,20 +490,28 @@ class AdminEventDetailView(APIView):
 
 #YOUTH QUIZESS SECTION
 
+
 class FetchQuizAPIView(APIView):
     permission_classes = [AllowAny]
-    def get(self, request):
 
-        url = "https://opentdb.com/api.php?amount=1000&category=20&type=multiple"
+    def get(self, request):
+        # Categories to fetch: Mythology (20) as religion proxy + other categories
+        categories = [20, 9, 17, 23, 21]  # Mythology, General, Science, History, Sports
+        all_questions = []
 
         try:
-            response = requests.get(url)
-            data = response.json()
+            for cat in categories:
+                url = f"https://opentdb.com/api.php?amount=5&category={cat}&type=multiple"
+                response = requests.get(url)
+                data = response.json()
 
-            if data.get("response_code") != 0:
+                if data.get("response_code") == 0:
+                    all_questions.extend(data["results"])
+
+            if not all_questions:
                 return Response({"error": "No questions available"}, status=status.HTTP_404_NOT_FOUND)
 
-            return Response(data, status=status.HTTP_200_OK)
+            return Response({"results": all_questions}, status=status.HTTP_200_OK)
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
