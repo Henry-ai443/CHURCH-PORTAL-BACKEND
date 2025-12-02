@@ -501,7 +501,7 @@ class FetchQuizAPIView(APIView):
 
         try:
             for cat in categories:
-                url = f"https://opentdb.com/api.php?amount=5&category={cat}&type=multiple"
+                url = f"https://opentdb.com/api.php?amount=200&category={cat}&type=multiple"
                 response = requests.get(url)
                 data = response.json()
 
