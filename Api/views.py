@@ -515,3 +515,36 @@ class FetchQuizAPIView(APIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+#RANDOM VERSUS
+
+class DailyVerseAPIView(APIView):
+    def get(self, request):
+        try:
+   
+            url = "https://labs.bible.org/api/?type=json&passage=random"
+            response = requests.get(url, timeout=5)
+
+            if response.status_code != 200:
+                return Response(
+                    {"error": "Bible API is unavailable."},
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE
+                )
+
+            data = response.json()
+
+            # The external API returns a list of one verse
+            verse = data[0] if isinstance(data, list) and data else data
+
+            return Response({
+                "book": verse.get("bookname"),
+                "chapter": verse.get("chapter"),
+                "verse": verse.get("verse"),
+                "text": verse.get("text")
+            })
+
+        except Exception as e:
+            return Response(
+                {"error": "Failed to fetch verse."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

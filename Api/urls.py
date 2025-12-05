@@ -42,6 +42,7 @@ urlpatterns = [
 
     #UTILITIES
     path("quizes/fetch/", views.FetchQuizAPIView.as_view(), name="quiz-fetch"),
+    path("daily-verse/", views.DailyVerseAPIView.as_view(), name="daily-verse")
     
 
 
