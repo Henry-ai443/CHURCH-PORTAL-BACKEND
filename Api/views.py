@@ -519,6 +519,7 @@ class FetchQuizAPIView(APIView):
 #RANDOM VERSUS
 
 class DailyVerseAPIView(APIView):
+    permission_classes = [AllowAny]
     def get(self, request):
         try:
    
