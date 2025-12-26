@@ -20,7 +20,8 @@ from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
 from django.db.models import Q
 import requests
-
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 
 class CurrentUserAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -248,19 +249,24 @@ class RegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
+@method_decorator(csrf_exempt, name="dispatch")
 class LoginView(APIView):
-    permission_classes=[AllowAny]   
+    permission_classes = [AllowAny]
+    authentication_classes = []  # Disable session authentication
+
     def post(self, request):
         username = request.data.get("username")
         password = request.data.get("password")
 
+        # Check for missing fields
         if not username or not password:
             return Response(
                 {"detail": "Username and password are required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-
+        # Check if user exists
         try:
             user = User.objects.get(username=username)
         except User.DoesNotExist:
@@ -269,7 +275,7 @@ class LoginView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        # Authenticate user now
+        # Authenticate user
         user = authenticate(request, username=username, password=password)
         if user is None:
             return Response(
@@ -277,12 +283,14 @@ class LoginView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        token, created = Token.objects.get_or_create(user=user)
+        # Get or create token
+        token, _ = Token.objects.get_or_create(user=user)
 
+        # Return consistent JSON response
         return Response(
             {
                 "username": user.username,
-                "is_staff":user.is_staff,
+                "is_staff": user.is_staff,
                 "token": token.key,
                 "message": "Login successful",
             },
