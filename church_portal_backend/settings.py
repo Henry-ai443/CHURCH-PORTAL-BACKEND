@@ -43,8 +43,11 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'channels',
 
-    # Your app
+    # Your apps
     'Api.apps.ApiConfig',
+    'authentication.apps.AuthenticationConfig',
+    'announcements.apps.AnnouncementsConfig',
+    'events.apps.EventsConfig',
 ]
 
 MIDDLEWARE = [

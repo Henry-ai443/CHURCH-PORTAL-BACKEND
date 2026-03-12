@@ -1,0 +1,15 @@
+from django.db import models
+from cloudinary.models import CloudinaryField
+
+
+class Event(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    entry = models.TextField(blank=True, null=True)
+    date_time = models.DateTimeField()
+    location = models.CharField(max_length=200, blank=True, null=True)
+    image = CloudinaryField('image', blank=True, null=True)
+    zoom_link = models.URLField(blank=True, null=True)
+
+    def __str__(self):
+        return self.title

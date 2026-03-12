@@ -1,7 +1,9 @@
 from django.contrib import admin
 from django import forms
 from cloudinary.forms import CloudinaryFileField
-from .models import Announcement, Event, Profile
+from announcements.models import Announcement
+from events.models import Event
+from authentication.models import Profile
 
 class ProfileAdminForm(forms.ModelForm):
     profile_picture = CloudinaryFileField(

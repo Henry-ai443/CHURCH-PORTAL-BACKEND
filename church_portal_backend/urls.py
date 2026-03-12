@@ -25,6 +25,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', root_view, name='root'),
     path('api/', include('Api.urls')),
+    path('api/', include('authentication.urls')),
+    path('api/', include('announcements.urls')),
+    path('api/', include('events.urls')),
 ]
 
 if settings.DEBUG:
